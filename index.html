@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="ar">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>The Little Hacker — الهاكر الصغير</title>
+
+<!--    ( الخلفية الزرقاء ( ستايلات الواجهة -->
+<style>
+  :root{
+    --bg:#08162b;         /* أزرق غامق */
+    --bg-pattern: linear-gradient(135deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+    --panel:#060606;      /* تيرمنال أسود */
+    --frame:#9aa0a6;      /* إطار رمادي */
+    --button:#9aa0a6;     /* لون الأزرار مساوي للإطار */
+    --text:#b7f07a;       /* نص داخل التيرمنال - أخضر شاشات الهكر */
+    --muted:#9fb3c8;      /* نص معلق خارجي */
+  }
+
+  html,body{
+    height:100%;
+    margin:0;
+    font-family: Arial, Tahoma, sans-serif;
+    background:
+      radial-gradient(rgba(255,255,255,0.02) 3px, transparent 3px),
+      var(--bg);
+    background-size: 50px 50px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  /* نقشة خفيفة محفورة */
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background-image: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.03)), repeating-linear-gradient(45deg, rgba(255,255,255,0.01) 0 2px, transparent 2px 6px);
+    pointer-events:none;
+  }
+
+  .container{
+    width:960px;
+    max-width:96vw;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:12px;
+  }
+
+  header {
+    width:100%;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+  }
+  .title {
+    color:var(--muted);
+    font-size:16px;
+  }
+  .page-title {
+    color:var(--muted);
+    font-size:20px;
+    font-weight:700;
+  }
+
+  /* التيرمنال - في المنتصف */
+  .terminal-wrap{
+    width:100%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));
+    padding:10px;
+    border-radius:8px;
+    display:flex;
+    justify-content:center;
+  }
+
+  .terminal {
+    width:860px;
+    max-width:92vw;
+    background:var(--panel);
+    border:4px solid var(--frame);
+    border-radius:6px;
+    box-shadow: 0 14px 40px rgba(0,0,0,0.6);
+    overflow:hidden;
+  }
+
+  /* ====== Typing + Cursor styles ====== */
+
+/* ليظهر النص بتوهج خفيف "هاكري" */
+#screen {
+  color: #7fffd4; /* أخضر هاكري */
+  text-shadow: 0 0 6px rgba(127,255,212,0.08);
+  white-space: pre-wrap;
+  font-variant-ligatures: none;
+}
+
+/* blinking cursor داخل prompt */
+#promptLabel { display:inline-block; }
+#promptLabel #cursor {
+  display:inline-block;
+  width:10px;
+  margin-left:6px;
+  color: var(--text, #7fffd4);
+  animation: blink 1s steps(2,end) infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+/* class لطباعة سطر سريع بدون تأخير لو احتجت */
+.no-type { animation: none !important; }
+
+/* تنسيق للـ banner (خليها monospace لو بتحب) */
+.ascii-banner { font-family: "Courier New", Consolas, monospace; color: #9fffbf; text-shadow: 0 0 8px rgba(159,255,191,0.08); }
+
+  /* شاشة الكتابة (الجزء الذي يظهر النص) */
+  #screen {
+    background: #000;              /* اسود داخل التيرمنال */
+    color: var(--text);            /* لون نص شاشات الهكر */
+    font-family: "Courier New", Consolas, monospace;
+    font-size:15px;
+    line-height:1.5;
+    height:360px;
+    padding:14px;
+    overflow:auto;
+    white-space:pre-wrap;
+    direction:ltr; /* أوامر بالانجليزي */
+  }
+
+  /* سطر الإدخال */
+  .input-row{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    padding:12px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.01), transparent);
+  }
+  .prompt{
+    color:var(--text);
+    min-width:150px;
+    font-family: "Courier New", Consolas, monospace;
+  }
+  input.cmd {
+    flex:1;
+    background:transparent;
+    border:1px solid rgba(255,255,255,0.03);
+    color:var(--text);
+    padding:8px 10px;
+    border-radius:6px;
+    outline:none;
+    font-family: "Courier New", Consolas, monospace;
+    font-size:15px;
+  }
+  .btn {
+    background:var(--button);
+    color:#0f1720;
+    border:none;
+    padding:8px 12px;
+    border-radius:6px;
+    cursor:pointer;
+    font-weight:700;
+  }
+  .small-muted { color:var(--muted); font-size:13px; }
+
+  /* زر اللغة والدرجات في رأس التيرمنال */
+  .controls-top { display:flex; gap:8px; align-items:center; }
+
+  /* الجمجمة بداخل التيرمنال (ستظهر فوق الشاشة) */
+  #skull {
+    position:absolute;
+    width:100%;
+    max-width:860px;
+    height:360px;
+    left:0;
+    top:0;
+    pointer-events:none;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    opacity:0;
+    transition:opacity 5s ease;
+  }
+  #skull img { width:70%; height:auto; opacity:0.55; filter: drop-shadow(0 8px 16px rgba(0,0,0,0.6)); }
+
+  /* ظهوره متحركاً (تكبير ثم تصغير) */
+  .skull-show {
+    animation: skullScale 5s linear forwards;
+    opacity:1 !important;
+  }
+  @keyframes skullScale {
+    0% { transform: scale(0.6) translateY(10px); opacity:0; }
+    10% { opacity:0.6; transform: scale(1) translateY(0); }
+    90% { opacity:0.6; transform: scale(1) translateY(0); }
+    100% { opacity:0; transform: scale(0.8) translateY(-10px); }
+  }
+
+  /* scoreboard modal */
+  .score-modal {
+    position:fixed;
+    right:50%;
+    transform:translateX(50%);
+    top:12%;
+    background: #08131a;
+    border:2px solid var(--frame);
+    color:var(--muted);
+    padding:12px;
+    border-radius:8px;
+    min-width:260px;
+    z-index:400;
+    box-shadow:0 8px 30px rgba(0,0,0,0.6);
+  }
+  .score-modal h3 { color:var(--muted); margin:0 0 8px 0; font-size:16px; }
+  .score-list { max-height:260px; overflow:auto; font-family: monospace; color:var(--text); }
+
+  /* Responsive */
+  @media (max-width:700px){
+    #screen{ height:260px; }
+    #skull svg { width:80%; }
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div>
+        <div class="page-title">عالم الهاكر ملىء بالتشويق والغموض </div>
+        <div class="title small-muted"> هذه لعبة تعليمية فقط - ليست اختراق حقيقي</div>
+      </div>
+
+      <div class="controls-top">
+        <button id="langBtn" class="btn">AR / EN</button>
+        <button id="scoreBtn" class="btn">الدرجات</button>
+
+        <input id="playerNameInput" type="text" placeholder=" الاسم" 
+               style="padding: 6px 8px ; border-radius: 6px ; border: 1px solid rgba(255, 255, 255, 0.06); background: transparent;color: var(--muted); width: 160px;" />
+        <button id="saveNameBtn" class="btn" title="حفظ"> حفظ الاسم </button>
+      </div>
+    </header>
+
+    <div class="terminal-wrap">
+      <div class="terminal" role="application" aria-label="Terminal">
+        <div class="terminal-header">
+          <div class="heading" id="terminalTitle"> Mini Hack - لعبة الهاكر الصغير</div>
+        </div>
+
+        <div style="position:relative;">
+          <!-- Skull overlay (hidden by default) -->
+          <div id="skull" aria-hidden="true">
+            <!-- big skull SVG -->
+            <img id="skullImg" src="skull-.png" alt="skull" style="width:70%; opacity: 0.33;" />
+              <g fill="#ffffff">
+                <path d="M256 0C167.6 0 96 71.6 96 160c0 39.6 13.8 75.9 37 104.6 5.7 6.9 8.1 15.9 6.4 24.5L123 376.6c-7.3 27.6 12.4 55.4 40.6 55.4h7.8c4.4 0 8 3.6 8 8v8c0 4.4 3.6 8 8 8h168c4.4 0 8-3.6 8-8v-8c0-4.4 3.6-8 8-8h7.8c28.2 0 47.9-27.8 40.6-55.4l-22.4-86.5c-1.7-8.6.7-17.6 6.4-24.5 23.2-28.7 37-65 37-104.6C416 71.6 344.4 0 256 0z"/>
+                <circle cx="180" cy="208" r="20" fill="#000000"/>
+                <circle cx="332" cy="208" r="20" fill="#000000"/>
+                <path d="M192 304c18 18 58 18 76 0" stroke="#000000" stroke-width="18" stroke-linecap="round" fill="none"/>
+              </g>
+            </svg>
+          </div>
+
+          <div id="screen" tabindex="0" aria-live="polite"></div>
+        </div>
+
+        <div class="input-row">
+          <div class="prompt" id="promptLabel">unknown@hack:~$</div>
+          <input id="cmdInput" class="cmd" autocomplete="off" spellcheck="false" placeholder="help : اكتب أمر هنا مثال" />
+          <button id="enterBtn" class="btn">🔍</button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- scoreboard modal placeholder -->
+  <div id="scoreModal" class="score-modal" style="display:none;"></div>
+
+  <!-- ربط ملف الجافاسكربت -->
+  <script src="game.js"></script>
+</body>
+</html>
